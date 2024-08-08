@@ -31,3 +31,40 @@ export const signup = async (req: Request, res: Response) => {
 }
 
 
+
+
+export const signin = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    const userExist = await db.user.findFirst({
+      where: {
+        email,
+      },
+    });
+
+    if (!userExist) {
+      return res.status(404).json("User not found");
+    }
+
+    const isPasswordValid = bcrypt.compare(password, userExist.password);
+
+    if (!isPasswordValid) {
+      return res.status(403).json({
+        msg: "wrong Credentials",
+      });
+    }
+
+    const token = jwt.sign(
+      { id: userExist.id },
+      process.env.JWT_SECRET as string
+    );
+    return res.json({
+      token,
+      userId: userExist.id,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      msg: "Something went wrong"
+    })
+  }
+}
