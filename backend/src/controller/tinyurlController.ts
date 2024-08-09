@@ -52,3 +52,46 @@ export async function create(req: Request, res: Response) {
     });
   }
 }
+export async function getAllUrls(req: Request, res: Response) {
+  try {
+    const { userId } = req.body
+    const allUrls = await db.shortUrl.findMany({
+      where: {
+        user: userId
+      }
+    })
+
+    return res.json(allUrls)
+  } catch (error: any) {
+    console.log(error)
+  }
+}
+
+export async function analytics(req: Request, res: Response) {
+  try {
+    const { shortUrl } = req.body
+    const tinyUrlExits = await db.shortUrl.findFirst({
+      where: {
+        shortUrl
+      }
+    })
+
+    if (!tinyUrlExits) {
+      return res.status(400).json("URL doesn't exist");
+    }
+
+    const visitsCount = tinyUrlExits.visits.length;
+
+    return res.status(200).json({
+      id: tinyUrlExits.id,
+      totalVisitsCount: visitsCount,
+      originalUrl: tinyUrlExits.originalURL,
+      createdAt: tinyUrlExits.createdAt
+    });
+  } catch (error: any) {
+    return res.json({
+      msg: "Something went wrong",
+      err: error.message,
+    });
+  }
+}

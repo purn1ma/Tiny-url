@@ -5,5 +5,6 @@ import { analytics, create, deleteUrl, getAllUrls } from "../controller/tinyurlC
 const router = Router()
 
 router.post("/create", authMiddleware, create)
-
+router.get("/getAllUrls", authMiddleware, getAllUrls) 
+router.get("/analytics", authMiddleware, analytics) 
 export { router as tinyurlRoutes }
