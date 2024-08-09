@@ -25,9 +25,16 @@ model ShortUrl {
   id          String     @id @default(cuid())
   shortUrl    String     @unique
   originalUrl String
-  visits      DateTime[]
+  visits      Visits[]
   userId      String
   user        User       @relation(fields: [userId], references: [id])
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+}
+
+model Visits {
+  id String @id @default(cuid())
+  shortUrlId String
+  shortUrl ShortUrl @relation(fields: [shortUrlId], references: [id])
+  visitedAt DateTime @default(now())
 }
