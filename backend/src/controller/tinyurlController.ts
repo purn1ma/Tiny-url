@@ -7,7 +7,9 @@ import db from "../lib/db";
 // Use singletton pattern to make an encryption key
 export async function create(req: Request, res: Response) {
   try {
-    const { url, userId } = req.body
+    const { url } = req.body
+     // @ts-ignore
+     const userId = req.userId
 
     // Authentication check
 
@@ -19,7 +21,9 @@ export async function create(req: Request, res: Response) {
     }
 
     const urlExists = await db.shortUrl.findFirst({
-      originalUrl: url
+      where: {
+        originalUrl: url
+      }
     })
 
     // If tinyUrl already exists then return it.
@@ -31,14 +35,13 @@ export async function create(req: Request, res: Response) {
 
     // If we want to make our application more scaleable we can use hashing to hash the original url so that we can more combinations so that it can cause less clash of two or more url are pointed by same tinyUrl
 
-    const shortId = encryption(url)
+    const shortId = await encryption(url)
 
     const newTinyUrl = await db.shortUrl.create({
       data: {
         shortUrl: `http://localhost:3000/${shortId}`,
-        originalURL: url,
-        visits: [],
-        user: userId
+        originalUrl: url,
+        userId,
       }
     })
 
@@ -46,7 +49,7 @@ export async function create(req: Request, res: Response) {
       tinyURL: newTinyUrl?.shortUrl
     });
   } catch (error: any) {
-    return res.json({
+    return res.status(500).json({
       msg: "Something went wrong",
       error: error.message,
     });
@@ -54,14 +57,18 @@ export async function create(req: Request, res: Response) {
 }
 export async function getAllUrls(req: Request, res: Response) {
   try {
-    const { userId } = req.body
-    const allUrls = await db.shortUrl.findMany({
+    // @ts-ignore
+    const userId = req.userId
+    const allUrls = await db.user.findFirst({
       where: {
-        user: userId
+        id: userId
+      },
+      include: {
+        shortUrls: true
       }
     })
 
-    return res.json(allUrls)
+    return res.json(allUrls?.shortUrls)
   } catch (error: any) {
     console.log(error)
   }
@@ -73,6 +80,9 @@ export async function analytics(req: Request, res: Response) {
     const tinyUrlExits = await db.shortUrl.findFirst({
       where: {
         shortUrl
+      },
+      include: {
+        visits: true
       }
     })
 
@@ -85,7 +95,7 @@ export async function analytics(req: Request, res: Response) {
     return res.status(200).json({
       id: tinyUrlExits.id,
       totalVisitsCount: visitsCount,
-      originalUrl: tinyUrlExits.originalURL,
+      originalUrl: tinyUrlExits.originalUrl,
       createdAt: tinyUrlExits.createdAt
     });
   } catch (error: any) {
