@@ -95,3 +95,35 @@ export async function analytics(req: Request, res: Response) {
     });
   }
 }
+
+export async function deleteUrl(req: Request, res: Response) {
+  try {
+    const { url } = req.body
+
+    const tinyUrlExists = await db.shortUrl.findFirst({
+      where: {
+        shortUrl: url
+      }
+    })
+
+    if(!tinyUrlExists) {
+      return res.status(404).json({
+        msg: "Tiny Url does not exists"
+      })
+    }
+
+    await db.shortUrl.delete({
+      where: {
+        shortUrl: url
+      }
+    })
+
+    return res.status(200).json("Url Deleted Succesfully")
+    
+  } catch (error: any) {
+    return res.json({
+      msg: "Something went wrong",
+      err: error.message
+    })
+  }
+}

@@ -7,4 +7,6 @@ const router = Router()
 router.post("/create", authMiddleware, create)
 router.get("/getAllUrls", authMiddleware, getAllUrls) 
 router.get("/analytics", authMiddleware, analytics) 
+router.delete("/delete", authMiddleware, deleteUrl)
+
 export { router as tinyurlRoutes }
