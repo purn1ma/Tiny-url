@@ -64,7 +64,11 @@ export async function getAllUrls(req: Request, res: Response) {
         id: userId
       },
       include: {
-        shortUrls: true
+        shortUrls: {
+          include: {
+            visits: true
+          }
+        }
       }
     })
 
@@ -108,11 +112,11 @@ export async function analytics(req: Request, res: Response) {
 
 export async function deleteUrl(req: Request, res: Response) {
   try {
-    const { url } = req.body
+    const url = req.query.url
 
     const tinyUrlExists = await db.shortUrl.findFirst({
       where: {
-        shortUrl: url
+        shortUrl: typeof(url) === "string" ? url : ""
       }
     })
 
@@ -124,7 +128,7 @@ export async function deleteUrl(req: Request, res: Response) {
 
     await db.shortUrl.delete({
       where: {
-        shortUrl: url
+        shortUrl: typeof(url) === "string" ? url : ""
       }
     })
 
