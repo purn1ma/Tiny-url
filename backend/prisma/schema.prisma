@@ -35,6 +35,6 @@ model ShortUrl {
 model Visits {
   id String @id @default(cuid())
   shortUrlId String
-  shortUrl ShortUrl @relation(fields: [shortUrlId], references: [id])
+  shortUrl ShortUrl @relation(fields: [shortUrlId], references: [id], onDelete: Cascade)
   visitedAt DateTime @default(now())
 }
